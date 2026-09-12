@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "david.opencode",
+  "name": "OpenCode Serve",
+  "version": "1.0.0",
+  "author": "Skeptomenos",
+  "license": "MIT",
+  "description": "Headless status service for the local OpenCode v2 server installed by this repo's setup scripts.",
+  "kinds": ["service"],
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}

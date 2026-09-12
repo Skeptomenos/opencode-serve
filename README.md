@@ -6,7 +6,7 @@
 
 <p align="center">
   Run <strong>OpenCode v2</strong> as a persistent local web app on Omarchy.<br>
-  One script. Boot-persistent server. Launcher entry. Done.
+  One script. Boot-persistent server. Launcher entry. Shell status service. Done.
 </p>
 
 <p align="center">
@@ -20,7 +20,9 @@
 
 ## What this is
 
-`install.sh` turns a fresh Omarchy machine into an OpenCode workstation:
+Two parts that work together:
+
+**Setup scripts** turn a fresh Omarchy machine into an OpenCode workstation:
 
 | Step | What happens |
 |------|--------------|
@@ -31,6 +33,8 @@
 
 Everything is idempotent. Re-run `install.sh` any time; it detects what exists, reuses the stored password, and never rotates it.
 
+**Shell plugin** (`david.opencode`, kind `service`) reports the local server status to the Omarchy shell. It polls the health endpoint without credentials: any HTTP answer means up, refused connection means down. No password needed.
+
 ## Install
 
 ```bash
@@ -40,6 +44,12 @@ cd opencode-serve
 ```
 
 Then open the app with <kbd>Super</kbd> + <kbd>Space</kbd>, type `OpenCode`.
+
+Add the shell status service:
+
+```bash
+omarchy plugin add https://github.com/Skeptomenos/opencode-serve.git --enable
+```
 
 ## Login
 
@@ -75,21 +85,24 @@ The enabled user service starts at graphical login, which covers every normal bo
 systemctl --user status opencode-serve.service
 journalctl --user -u opencode-serve.service
 curl -u opencode:<password> http://127.0.0.1:4096/api/health
+omarchy plugin list | grep opencode
 ```
 
 ## Uninstall
 
 ```bash
 ./uninstall.sh
+omarchy plugin remove david.opencode
 ```
 
-Removes the service and the web app. Keeps the binary and your OpenCode config.
+Removes the service, the web app, and the shell plugin. Keeps the binary and your OpenCode config.
 
 ## Security notes
 
 - The server binds `127.0.0.1` only. No LAN exposure. Verified with `ss -ltn`.
 - The password cannot be removed: OpenCode v2 requires a server password. This repo pins one stable password instead of a random one per boot.
 - The unit file holds the password and is `chmod 600`. The password never appears in logs.
+- The shell plugin polls without credentials and runs no install hooks.
 
 ## Troubleshooting
 
@@ -103,9 +116,9 @@ Removes the service and the web app. Keeps the binary and your OpenCode config.
 
 ## Attribution
 
-**OpenCode is built by the [OpenCode team](https://opencode.ai).** The binary, the API and web server, the web UI, and the logo are all their work. Docs: [opencode.ai/v2/docs](https://opencode.ai/v2/docs).
+**OpenCode is built by [Anomaly](https://anoma.ly/)** — the makers of [OpenCode](https://opencode.ai). The binary, the API and web server, the web UI, and the logo are all their work. Docs: [opencode.ai/v2/docs](https://opencode.ai/v2/docs).
 
-This repository is an **unofficial setup wrapper** and is not affiliated with or endorsed by the OpenCode team. All credit for OpenCode itself belongs to them.
+This repository is an **unofficial setup wrapper** and is not affiliated with or endorsed by Anomaly. All credit for OpenCode itself belongs to them.
 
 ## License
 
