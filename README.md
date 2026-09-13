@@ -6,7 +6,7 @@
 
 <p align="center">
   Run <strong>OpenCode v2</strong> as a persistent local web app on Omarchy.<br>
-  One script. Boot-persistent server. Launcher entry. Shell status service. Done.
+  One script. Boot-persistent server. Launcher entry. Default agent. Shell status service. Done.
 </p>
 
 <p align="center">
@@ -30,6 +30,7 @@ Two parts that work together:
 | 🔐 Password | Sets one stable server password (V2 mandates auth; without it you get a random password every boot) |
 | ⚙️ Service | Writes and enables a systemd user service: `opencode serve` on `127.0.0.1:4096`, localhost only, restarts on failure |
 | 🚀 Web app | Creates an `OpenCode` launcher entry (Chromium app mode, official icon) |
+| 🧭 Default agent | Prepends `~/.opencode/bin` to the Omarchy session PATH, so the launcher and the Agent keybinding run v2 instead of another `opencode` (for example a mise-managed v1) |
 
 Everything is idempotent. Re-run `install.sh` any time; it detects what exists, reuses the stored password, and never rotates it.
 
@@ -62,6 +63,13 @@ The server uses HTTP Basic auth. The browser asks once and saves it.
 grep -oP 'OPENCODE_SERVER_PASSWORD=\K.*' ~/.config/systemd/user/opencode-serve.service
 ```
 
+## Default agent
+
+The script points the Omarchy session PATH at `~/.opencode/bin`, so `opencode` means v2 in the launcher and in the <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Ctrl</kbd>+<kbd>A</kbd> Agent keybinding. Those run with the session PATH, not your interactive shell's PATH.
+
+- The running session is updated at install time where possible.
+- Everything is active after one log out and back in. The launcher menu needs that, or run `omarchy restart shell`.
+
 ## Boot behavior
 
 The enabled user service starts at graphical login, which covers every normal boot since Omarchy auto-logs in. For start without any login session:
@@ -78,6 +86,7 @@ The enabled user service starts at graphical login, which covers every normal bo
 | `~/.config/systemd/user/opencode-serve.service` | Boot service, localhost-only |
 | `~/.local/share/applications/OpenCode.desktop` | Launcher entry |
 | `~/.local/share/icons/hicolor/256x256/apps/opencode.png` | App icon |
+| `~/.config/uwsm/env.d/50-opencode-v2` | Session PATH wiring for the default agent |
 
 ## Logs and status
 
@@ -95,7 +104,7 @@ omarchy plugin list | grep opencode
 omarchy plugin remove david.opencode
 ```
 
-Removes the service, the web app, and the shell plugin. Keeps the binary and your OpenCode config.
+Removes the service, the web app, the shell plugin, and the session PATH wiring. Keeps the binary and your OpenCode config.
 
 ## Security notes
 
